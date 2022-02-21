@@ -20,7 +20,9 @@ server <- function(input, output, session) {
     tbl <- tibble::tibble(x = dat[[1]][[1]], y = dat[[1]][[2]])
     return(tbl)
   })
-  schema <- shiny.table.store::table_schema(
+  schema <- callModule(
+    table_schema,
+    id = "testy-test",
     get_data = get_data
   )
   observe({

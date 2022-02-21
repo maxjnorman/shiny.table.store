@@ -1,6 +1,6 @@
 cat_lists <- function(list1, list2) {
   keys <- unique(c(names(list1), names(list2)))
-  set_names(map2(list1[keys], list2[keys], c), keys)
+  magrittr::set_names(purrr::map2(list1[keys], list2[keys], c), keys)
 }
 schema_from_tbl <- function(tbl) {
   logger::log_trace("call shiny.table.store::schema_from_tbl")
