@@ -17,7 +17,7 @@ table_schema <- function(input,
                          session,
                          get_data = shiny::reactive,
                          schema = list()) {
-  history <- reactiveValues()
+  history <- shiny::reactiveValues()
   history[[get_timestamp(i = "0")]] <- schema
   shiny::observeEvent(
     get_data(),
@@ -29,12 +29,12 @@ table_schema <- function(input,
       } else {
         update <- purrr::map2(schema_tbl, schema, setdiff)
       }
-      idx <- as.character(length(reactiveValuesToList(history)))
+      idx <- as.character(length(shiny::reactiveValuesToList(history)))
       history[[get_timestamp(i = idx)]] <- update
     }
   )
   get_schema <- reactive({
-    history <- reactiveValuesToList(history)
+    history <- shiny::reactiveValuesToList(history)
     history <- history[order(names(history))]
     schema <- purrr::reduce(history, cat_lists)
     return(schema)
