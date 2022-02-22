@@ -33,7 +33,7 @@ table_schema <- function(input,
       history[[get_timestamp(i = idx)]] <- update
     }
   )
-  get_schema <- reactive(
+  get_schema <- shiny::reactive(
     {
       history <- shiny::reactiveValuesToList(history)
       history <- history[order(names(history))]
@@ -41,7 +41,7 @@ table_schema <- function(input,
       return(schema)
     }
   )
-  apply_schema <- reactive(
+  apply_schema <- shiny::reactive(
     {
       # implement!
       # something like... factor(get_data()$y, levels = schema$get_schema()$y)
