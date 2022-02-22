@@ -33,13 +33,22 @@ table_schema <- function(input,
       history[[get_timestamp(i = idx)]] <- update
     }
   )
-  get_schema <- reactive({
-    history <- shiny::reactiveValuesToList(history)
-    history <- history[order(names(history))]
-    schema <- purrr::reduce(history, cat_lists)
-    return(schema)
-  })
+  get_schema <- reactive(
+    {
+      history <- shiny::reactiveValuesToList(history)
+      history <- history[order(names(history))]
+      schema <- purrr::reduce(history, cat_lists)
+      return(schema)
+    }
+  )
+  apply_schema <- reactive(
+    {
+      # implement!
+      NULL
+    }
+  )
   return(list(
+    "get_data" = apply_schema,
     "get_schema" = get_schema,
     "history" = history
   ))

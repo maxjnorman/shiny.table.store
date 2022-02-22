@@ -16,9 +16,12 @@ get_timestamp <- function(i = NULL) {
   return(timestamp)
 }
 cat_lists <- function(list1, list2) {
+  logger::log_trace("call shiny.table.store::cat_lists")
   # https://stackoverflow.com/questions/18538977/combine-merge-lists-by-elements-names
   keys <- unique(c(names(list1), names(list2)))
-  magrittr::set_names(purrr::map2(list1[keys], list2[keys], c), keys)
+  lists <- magrittr::set_names(purrr::map2(list1[keys], list2[keys], c), keys)
+  logger::log_trace("return shiny.table.store::cat_lists")
+  return(lists)
 }
 schema_from_tbl <- function(tbl) {
   logger::log_trace("call shiny.table.store::schema_from_tbl")
