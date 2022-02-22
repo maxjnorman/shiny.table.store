@@ -16,6 +16,7 @@ get_timestamp <- function(i = NULL) {
   return(timestamp)
 }
 cat_lists <- function(list1, list2) {
+  # https://stackoverflow.com/questions/18538977/combine-merge-lists-by-elements-names
   keys <- unique(c(names(list1), names(list2)))
   magrittr::set_names(purrr::map2(list1[keys], list2[keys], c), keys)
 }
