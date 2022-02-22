@@ -1,32 +1,24 @@
 # @export
-table_store <- function(
-  input,
-  output,
-  session,
-  data = tibble::tibble()
-) {
-
+table_store <- function(input,
+                        output,
+                        session,
+                        data = tibble::tibble()) {
   get_data <- shiny::reactive(
     # implement!
     NULL
   )
-
   return(list(
     "get_data" = get_data
   ))
 }
 
-table_schema <- function(
-  input,
-  output,
-  session,
-  get_data = shiny::reactive,
-  schema = list()
-) {
-
+table_schema <- function(input,
+                         output,
+                         session,
+                         get_data = shiny::reactive,
+                         schema = list()) {
   history <- reactiveValues()
-  history[["0"]] <- schema
-
+  history[[get_timestamp(i = "0")]] <- schema
   shiny::observeEvent(
     get_data(),
     {
@@ -38,20 +30,17 @@ table_schema <- function(
         update <- purrr::map2(schema_tbl, schema, setdiff)
       }
       idx <- as.character(length(reactiveValuesToList(history)))
-      history[[idx]] <- update
+      history[[get_timestamp(i = idx)]] <- update
     }
   )
-
-  get_schema <- reactive(
-    {
-      history <- reactiveValuesToList(history)
-      history <- history[order(names(history))]
-      schema <- purrr::reduce(history, cat_lists)
-      return(schema)
-    }
-  )
-
+  get_schema <- reactive({
+    history <- reactiveValuesToList(history)
+    history <- history[order(names(history))]
+    schema <- purrr::reduce(history, cat_lists)
+    return(schema)
+  })
   return(list(
-    "get_schema" = get_schema
+    "get_schema" = get_schema,
+    "history" = history
   ))
 }
