@@ -44,6 +44,7 @@ table_schema <- function(input,
   apply_schema <- reactive(
     {
       # implement!
+      # something like... factor(get_data()$y, levels = schema$get_schema()$y)
       NULL
     }
   )
