@@ -3,6 +3,7 @@ get_timestamp <- function(i = NULL) {
   if (is.null(i)) {
     timestamp <- str_remove_all(Sys.time(), "[^0-9]")
   } else {
+    stopifnot(is.integer(i))
     stopifnot(i >= 0)
     timestamp <- stringr::str_pad(i, 14, "left", "0")
   }
