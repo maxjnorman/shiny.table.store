@@ -20,13 +20,24 @@ server <- function(input, output, session) {
     tbl <- tibble::tibble(x = dat[[1]][[1]], y = dat[[1]][[2]])
     return(tbl)
   })
+  data <- callModule(
+    table_store,
+    id = "testy-test",
+    data = tibble::tibble(x = character(), y = character())
+  )
   schema <- callModule(
     table_schema,
     id = "testy-test",
-    get_data = get_data
+    get_data = data$get_data
   )
-  observe({
+  observeEvent(get_data(), {
+    idx <- as.character(length(reactiveValuesToList(data$history)))
+    data$history[[get_timestamp(idx)]] <- get_data()
+  })
+  observeEvent(schema$get_schema(), {
+    print(data$get_data())
     print(schema$get_schema())
+    print(schema$get_data())
     browser()
   })
 }
