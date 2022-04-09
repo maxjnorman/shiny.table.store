@@ -30,3 +30,7 @@ schema_from_tbl <- function(tbl) {
   return(schema)
 }
 has_length <- purrr::compose(as.logical, length)
+unique_tbl <- function(left, right, ...) {
+  tbl <- dplyr::bind_rows(left, dplyr::anti_join(right, left, ...))
+  return(tbl)
+}
