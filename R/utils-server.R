@@ -29,3 +29,4 @@ schema_from_tbl <- function(tbl) {
   logger::log_trace("return shiny.table.store::schema_from_tbl")
   return(schema)
 }
+has_length <- purrr::compose(as.logical, length)
