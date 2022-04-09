@@ -7,6 +7,7 @@ get_timestamp <- function(i = NULL, size = 14) {
   } else {
     stopifnot(is.integer(i))
     stopifnot(i >= 0)
+    i <- as.character(i)
   }
   timestamp <- stringr::str_pad(i, size, "left", "0")
   logger::log_trace("return shiny.table.store::get_timestamp")
