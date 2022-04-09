@@ -31,7 +31,7 @@ server <- function(input, output, session) {
     get_data = data$get_data
   )
   observeEvent(get_data(), {
-    idx <- as.character(length(reactiveValuesToList(data$history)))
+    idx <- length(reactiveValuesToList(data$history))
     data$history[[get_timestamp(idx)]] <- get_data()
   })
   observeEvent(schema$get_schema(), {
