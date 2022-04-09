@@ -26,7 +26,6 @@ server <- function(input, output, session) {
     get_data = get_data
   )
   observe({
-    print(get_data())
     print(schema$get_schema())
     browser()
   })
