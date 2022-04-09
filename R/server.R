@@ -29,8 +29,10 @@ table_schema <- function(input,
       } else {
         update <- purrr::map2(schema_tbl, schema, setdiff)
       }
-      idx <- as.character(length(shiny::reactiveValuesToList(history)))
-      history[[get_timestamp(i = idx)]] <- update
+      if (any(sapply(update, has_length))) {
+        idx <- as.character(length(shiny::reactiveValuesToList(history)))
+        history[[get_timestamp(i = idx)]] <- update
+      }
     }
   )
   get_schema <- shiny::reactive(
@@ -43,9 +45,8 @@ table_schema <- function(input,
   )
   apply_schema <- shiny::reactive(
     {
-      # implement!
-      # something like... factor(get_data()$y, levels = schema$get_schema()$y)
-      NULL
+      data <- purrr::map2_df(get_data(), get_schema(), factor)
+      return(data)
     }
   )
   return(list(
