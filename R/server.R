@@ -1,17 +1,28 @@
-# @export
+#' @export
 table_store <- function(input,
                         output,
                         session,
-                        data = tibble::tibble()) {
+                        data = tibble::tibble(),
+                        keys_ignore = c("value")
+                        ) {
+  history <- shiny::reactiveValues()
+  history[[get_timestamp(i = "0")]] <- data
   get_data <- shiny::reactive(
-    # implement!
-    NULL
+    {
+      history <- shiny::reactiveValuesToList(history)
+      history <- history[order(names(history))]
+      keys <- setdiff(purrr::reduce(lapply(history, names), union), keys_ignore)
+      tbl <- purrr::reduce(history, unique_tbl, by = keys)
+      return(tbl)
+    }
   )
   return(list(
-    "get_data" = get_data
+    "get_data" = get_data,
+    "history" = history
   ))
 }
 
+#' @export
 table_schema <- function(input,
                          output,
                          session,
