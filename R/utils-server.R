@@ -1,4 +1,4 @@
-get_timestamp <- function(i = NULL, size = 14) {
+get_timestamp <- function(i = NULL, size = as.integer(14)) {
   logger::log_trace("call shiny.table.store::get_timestamp")
   stopifnot(is.integer(size))
   stopifnot(size >= 14)
