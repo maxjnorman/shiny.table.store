@@ -1,4 +1,4 @@
-# @export
+#' @export
 table_store <- function(input,
                         output,
                         session,
@@ -22,6 +22,7 @@ table_store <- function(input,
   ))
 }
 
+#' @export
 table_schema <- function(input,
                          output,
                          session,
