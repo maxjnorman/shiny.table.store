@@ -33,7 +33,7 @@ table_schema <- function(input,
   shiny::observeEvent(
     get_data(),
     {
-      schema_tbl <- schema_from_tbl(get_data())
+      schema_tbl <- lapply(get_data(), unique)
       schema <- get_schema()
       if (is.null(names(schema))) {
         update <- schema_tbl

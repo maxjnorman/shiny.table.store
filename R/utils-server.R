@@ -23,12 +23,6 @@ cat_lists <- function(list1, list2) {
   logger::log_trace("return shiny.table.store::cat_lists")
   return(lists)
 }
-schema_from_tbl <- function(tbl) {
-  logger::log_trace("call shiny.table.store::schema_from_tbl")
-  schema <- lapply(tbl, unique)
-  logger::log_trace("return shiny.table.store::schema_from_tbl")
-  return(schema)
-}
 has_length <- purrr::compose(as.logical, length)
 unique_tbl <- function(left, right, ...) {
   tbl <- dplyr::bind_rows(left, dplyr::anti_join(right, left, ...))
