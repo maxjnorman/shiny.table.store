@@ -1,12 +1,14 @@
-get_timestamp <- function(i = NULL) {
+get_timestamp <- function(i = NULL, size = 14) {
   logger::log_trace("call shiny.table.store::get_timestamp")
+  stopifnot(is.integer(size))
+  stopifnot(size >= 14)
   if (is.null(i)) {
-    timestamp <- str_remove_all(Sys.time(), "[^0-9]")
+    i <- stringr::str_remove_all(Sys.time(), "[^0-9]")
   } else {
     stopifnot(is.integer(i))
     stopifnot(i >= 0)
-    timestamp <- stringr::str_pad(i, 14, "left", "0")
   }
+  timestamp <- stringr::str_pad(i, size, "left", "0")
   logger::log_trace("return shiny.table.store::get_timestamp")
   return(timestamp)
 }
