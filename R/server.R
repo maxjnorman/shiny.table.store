@@ -6,7 +6,7 @@ table_store <- function(input,
                         keys_ignore = c("value")
                         ) {
   history <- shiny::reactiveValues()
-  history[[get_timestamp(i = "0")]] <- data
+  history[[get_timestamp(i = as.integer(0))]] <- data
   get_data <- shiny::reactive(
     {
       history <- shiny::reactiveValuesToList(history)
@@ -29,7 +29,7 @@ table_schema <- function(input,
                          get_data = shiny::reactive,
                          schema = list()) {
   history <- shiny::reactiveValues()
-  history[[get_timestamp(i = "0")]] <- schema
+  history[[get_timestamp(i = as.integer(0))]] <- schema
   shiny::observeEvent(
     get_data(),
     {
@@ -41,7 +41,7 @@ table_schema <- function(input,
         update <- purrr::map2(schema_tbl, schema, setdiff)
       }
       if (any(sapply(update, has_length))) {
-        idx <- as.character(length(shiny::reactiveValuesToList(history)))
+        idx <- length(shiny::reactiveValuesToList(history))
         history[[get_timestamp(i = idx)]] <- update
       }
     }
