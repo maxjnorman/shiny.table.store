@@ -21,7 +21,7 @@ server <- function(input, output, session) {
     return(tbl)
   })
   schema <- callModule(
-    table_schema,
+    schema_core,
     id = "testy-test",
     get_data = get_data
   )
