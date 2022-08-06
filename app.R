@@ -17,11 +17,10 @@ ui <- fluidPage(
 )
 server <- function(input, output, session) {
   get_data <- reactive({
-    invalidateLater(millis = 500)
+    invalidateLater(millis = 50)
     time_rev <- paste(rev(stringr::str_split(Sys.time(), "")[[1]]), collapse = "")
     dat <- stringr::str_split(time_rev, " ")
     tbl <- tibble::tibble(x = dat[[1]][[1]], y = dat[[1]][[2]], value = rnorm(1, 0, 1))
-    # Sys.sleep(5)
     return(tbl)
   })
   dat <- shiny::callModule(
@@ -41,14 +40,14 @@ server <- function(input, output, session) {
     {
       if (nrow(dat$get_data()) < 5) {
         dat$set_update(get_data())
-      } else {
-        browser()
+      # } else {
+      #   browser()
       }
     }
   )
-  observeEvent(dat$get_schema(), {
+  observeEvent(flt$get_data(), {
     print(flt$get_data())
-    # browser()
+    browser()
   })
 }
 
