@@ -21,7 +21,7 @@ server <- function(input, output, session) {
     tbl <- tibble::tibble(x = dat[[1]][[1]], y = dat[[1]][[2]], value = rnorm(1, 0, 1))
     return(tbl)
   })
-  data <- callModule(
+  data <- shiny::callModule(
     table_schema,
     id = "testy-test",
     data = tibble::tibble(x = character(), y = character(), value = double(0)),
