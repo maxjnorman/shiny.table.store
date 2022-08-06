@@ -22,6 +22,9 @@ cat_lists <- function(list1, list2) {
   return(lists)
 }
 has_length <- purrr::compose(as.logical, length)
+has_rows <- purrr::compose(as.logical, nrow)
+req_length <- purrr::compose(shiny::req, has_length)
+req_rows <- purrr::compose(shiny::req, has_rows)
 unique_tbl <- function(left, right, ...) {
   tbl <- dplyr::bind_rows(left, dplyr::anti_join(right, left, ...))
   return(tbl)

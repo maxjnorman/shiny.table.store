@@ -128,7 +128,14 @@ table_schema <- function(input,
 
 #' @export
 filter_core_ui <- function(id) {
-
+  ns <- NS(id)
+  elements <- list(
+    div(
+      id = ns("div"),
+      uiOutput(outputId = ns("ui"))
+    )
+  )
+  return(elements)
 }
 
 #' @export
@@ -138,5 +145,40 @@ filter_core <- function(
   session,
   get_data = shiny::reactive
 ) {
-
+  ns <- session[["ns"]]
+  output[["ui"]] <- renderUI({
+    tbl <- get_data()
+    req_rows(tbl)
+    ids <- ns(names(tbl))
+    choices <- lapply(tbl, unique)
+    elements <- purrr::map2(ids, choices, function(id, choices) {
+      shiny::selectInput(
+        inputId = id,
+        label = id,
+        choices = choices,
+        selected = isolate(input[[id]])
+      )
+    })
+    return(elements)
+  })
+  filter_data <- reactive({
+    tbl <- get_data()
+    req_rows(tbl)
+    ids <- names(tbl)
+    vals <- setNames(
+      lapply(ids, function(id) {
+        val <- input[[id]]
+        if (shiny::isTruthy(val)) {
+          item <- tibble::tibble(!!rlang::sym(id) := setNames(val, id))
+          return(item)
+        }
+      }),
+      ids
+    )
+    browser()
+    return(tbl)
+  })
+  return(list(
+    "get_data" = filter_data
+  ))
 }

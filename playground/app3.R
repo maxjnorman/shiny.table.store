@@ -12,43 +12,30 @@ logger::log_threshold(log_level)
 logger::log_info("current log level is {log_level}:{attr(log_level, 'level')}")
 
 
-ui <- fluidPage(
-  filter_core_ui(id = "test-filter_core")
-)
+ui <- fluidPage()
 server <- function(input, output, session) {
   get_data <- reactive({
     invalidateLater(millis = 500)
     time_rev <- paste(rev(stringr::str_split(Sys.time(), "")[[1]]), collapse = "")
     dat <- stringr::str_split(time_rev, " ")
     tbl <- tibble::tibble(x = dat[[1]][[1]], y = dat[[1]][[2]], value = rnorm(1, 0, 1))
-    # Sys.sleep(5)
     return(tbl)
   })
-  dat <- shiny::callModule(
+  data <- shiny::callModule(
     table_schema,
-    id = "test-table_schema",
+    id = "testy-test",
     data = tibble::tibble(x = character(), y = character(), value = double(0)),
     schema = list(),
     keys_ignore = c("value")
   )
-  flt <- shiny::callModule(
-    filter_core,
-    id = "test-filter_core",
-    get_data = dat$get_data
-  )
   observeEvent(
     get_data(),
-    {
-      if (nrow(dat$get_data()) < 5) {
-        dat$set_update(get_data())
-      } else {
-        browser()
-      }
-    }
+    data$set_update(get_data())
   )
-  observeEvent(dat$get_schema(), {
-    print(flt$get_data())
-    # browser()
+  observeEvent(data$get_schema(), {
+    print(data$get_data())
+    print(data$get_schema())
+    browser()
   })
 }
 
