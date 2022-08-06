@@ -125,3 +125,18 @@ table_schema <- function(input,
     "history" = engine$history
   ))
 }
+
+#' @export
+filter_core_ui <- function(id) {
+
+}
+
+#' @export
+filter_core <- function(
+  input,
+  output,
+  session,
+  get_data = shiny::reactive
+) {
+
+}
