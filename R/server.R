@@ -125,3 +125,96 @@ table_schema <- function(input,
     "history" = engine$history
   ))
 }
+
+#' @export
+filter_core_ui <- function(id) {
+  ns <- NS(id)
+  elements <- list(
+    div(
+      id = ns("div"),
+      uiOutput(outputId = ns("ui"))
+    )
+  )
+  return(elements)
+}
+
+filter_core_single <- function(input,
+                               output,
+                               session,
+                               col,
+                               get_data,
+                               multiple) {
+  ns <- session[["ns"]]
+  output[["ui"]] <- renderUI({
+    tbl <- get_data()
+    req_rows(tbl)
+    choices <- dplyr::pull(tbl, dplyr::all_of(col))
+    # selected <- isolate(ifnull(input[["selector"]], then = dplyr::last(choices)))
+    selected <- isolate(input[["selector"]])
+    elements <- list(
+      shiny::selectInput(
+        inputId = ns("selector"),
+        label = col,
+        choices = choices,
+        selected = selected,
+        multiple = multiple
+      )
+    )
+    return(elements)
+  })
+  filter_data <- reactive({
+    tbl <- get_data()
+    selected <- input[["selector"]]
+    if (isTruthy(selected)) {
+      tbl <- dplyr::filter(tbl, !!rlang::sym(col) %in% selected)
+    }
+    return(tbl)
+  })
+  return(filter_data)
+}
+
+#' @export
+filter_core <- function(input,
+                        output,
+                        session,
+                        cols,
+                        get_data = shiny::reactive,
+                        multiple = TRUE) {
+  ns <- session[["ns"]]
+  output[["ui"]] <- renderUI({
+    tbl <- get_data()
+    req_rows(tbl)
+    ids <- ns(names(tbl))
+    elements <- lapply(ids, filter_core_ui)
+    return(elements)
+  })
+  filters <- list()
+  for (i in seq_along(cols)) {
+    local({ # force local evaluation to prevent lazy errors from the for loop
+      col <- cols[[i]]
+      if (length(filters) == 0) {
+        filters[[col]] <<- callModule( # Max: Ugh... <<-
+          filter_core_single,
+          id = col,
+          col = col,
+          get_data = get_data,
+          multiple = multiple
+        )
+      } else {
+        prev_data <- filters[[cols[[(i - 1)]]]]
+        filters[[col]] <<- callModule( # Max: Ugh... <<-
+          filter_core_single,
+          id = col,
+          col = col,
+          get_data = prev_data,
+          multiple = multiple
+        )
+      }
+    })
+  }
+  get_steps <- reactive(lapply(filters, function(filter) { filter() }))
+  return(list(
+    "get_data" = dplyr::last(filters),
+    "get_steps" = get_steps
+  ))
+}

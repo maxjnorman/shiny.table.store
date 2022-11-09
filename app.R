@@ -12,30 +12,66 @@ logger::log_threshold(log_level)
 logger::log_info("current log level is {log_level}:{attr(log_level, 'level')}")
 
 
-ui <- fluidPage()
+ui <- fluidPage(
+  column(
+    width = 4,
+    tableOutput(outputId = "data_tbl"),
+  ),
+  column(
+    width = 4,
+    filter_core_ui(id = "filter_core")
+  ),
+  column(
+    width = 4,
+    tableOutput(outputId = "filter_tbl"),
+  )
+)
 server <- function(input, output, session) {
   get_data <- reactive({
-    invalidateLater(millis = 500)
-    time_rev <- paste(rev(stringr::str_split(Sys.time(), "")[[1]]), collapse = "")
-    dat <- stringr::str_split(time_rev, " ")
-    tbl <- tibble::tibble(x = dat[[1]][[1]], y = dat[[1]][[2]], value = rnorm(1, 0, 1))
+    invalidateLater(millis = 5)
+    tbl <- tibble::tibble(
+      x = as.character(round(runif(1, 1, 7))),
+      y = as.character(round(runif(1, 3, 10))),
+      value = rnorm(1, 0, 1)
+    )
     return(tbl)
   })
-  data <- shiny::callModule(
+  dat <- shiny::callModule(
     table_schema,
-    id = "testy-test",
+    id = "table_schema",
     data = tibble::tibble(x = character(), y = character(), value = double(0)),
     schema = list(),
     keys_ignore = c("value")
   )
+  flt <- shiny::callModule(
+    filter_core,
+    id = "filter_core",
+    get_data = dat$get_data,
+    cols = c("x", "y"),
+    multiple = TRUE
+  )
   observeEvent(
     get_data(),
-    data$set_update(get_data())
+    {
+      if (nrow(dat$get_data()) < 15) {
+        dat$set_update(get_data())
+      }
+    }
   )
-  observeEvent(data$get_schema(), {
-    print(data$get_data())
-    print(data$get_schema())
-    browser()
+  observeEvent(flt$get_data(), {
+    print(flt$get_data())
+  })
+  output[["data_tbl"]] <- renderTable(
+    dplyr::arrange(
+      dat$get_data(),
+      dplyr::across(
+        dplyr::any_of(c("x", "y")),
+        purrr::compose(as.double, as.character)
+      )
+    )
+  )
+  output[["filter_tbl"]] <- renderTable({
+    flt$get_data()
   })
 }
 
