@@ -8,9 +8,7 @@ table_core <- function(input,
   history[[get_timestamp(i = as.integer(0))]] <- data
   get_data <- shiny::reactive({
     history <- shiny::reactiveValuesToList(history)
-    history <- history[order(names(history))]
-    keys <- setdiff(purrr::reduce(lapply(history, names), intersect), keys_ignore)
-    tbl <- purrr::reduce(history, unique_tbl, by = keys)
+    tbl <- tbl_from_history(history, keys_ignore = keys_ignore)
     return(tbl)
   })
   return(list(

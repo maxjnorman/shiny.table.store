@@ -26,6 +26,8 @@ has_rows <- purrr::compose(as.logical, nrow)
 req_length <- purrr::compose(shiny::req, has_length)
 req_rows <- purrr::compose(shiny::req, has_rows)
 unique_tbl <- function(left, right, ...) {
+  stopifnot(is(left, "data.frame")) # a tibble::tibble() is OK too
+  stopifnot(is(right, "data.frame"))
   logger::log_trace("call shiny.table.store::unique_tbl")
   tbl <- dplyr::bind_rows(left, dplyr::anti_join(right, left, ...))
   logger::log_trace("return shiny.table.store::unique_tbl")
@@ -39,4 +41,14 @@ ifnull <- function(obj, then, test = not_truthy) {
     output <- obj
   }
   return(output)
+}
+
+tbl_from_history <- function(history, keys_ignore = NULL) {
+  stopifnot(is(history, "list"))
+  if (magrittr::not(is.null(names(history)))) {
+    history <- history[order(names(history))]
+  }
+  keys <- setdiff(purrr::reduce(lapply(history, names), intersect), keys_ignore)
+  tbl <- purrr::reduce(history, unique_tbl, by = keys)
+  return(tbl)
 }
