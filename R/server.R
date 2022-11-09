@@ -142,19 +142,22 @@ filter_core_single <- function(input,
                                output,
                                session,
                                col,
-                               get_data = shiny::reactive) {
+                               get_data,
+                               multiple) {
   ns <- session[["ns"]]
   output[["ui"]] <- renderUI({
     tbl <- get_data()
     req_rows(tbl)
     choices <- dplyr::pull(tbl, dplyr::all_of(col))
-    selected <- isolate(ifnull(input[["selector"]], then = dplyr::last(choices)))
+    # selected <- isolate(ifnull(input[["selector"]], then = dplyr::last(choices)))
+    selected <- isolate(input[["selector"]])
     elements <- list(
       shiny::selectInput(
         inputId = ns("selector"),
         label = col,
         choices = choices,
-        selected = selected
+        selected = selected,
+        multiple = multiple
       )
     )
     return(elements)
@@ -175,7 +178,8 @@ filter_core <- function(input,
                         output,
                         session,
                         cols,
-                        get_data = shiny::reactive) {
+                        get_data = shiny::reactive,
+                        multiple = TRUE) {
   ns <- session[["ns"]]
   output[["ui"]] <- renderUI({
     tbl <- get_data()
@@ -193,7 +197,8 @@ filter_core <- function(input,
           filter_core_single,
           id = col,
           col = col,
-          get_data = get_data
+          get_data = get_data,
+          multiple = multiple
         )
       } else {
         prev_data <- filters[[cols[[(i - 1)]]]]
@@ -201,7 +206,8 @@ filter_core <- function(input,
           filter_core_single,
           id = col,
           col = col,
-          get_data = prev_data
+          get_data = prev_data,
+          multiple = multiple
         )
       }
     })

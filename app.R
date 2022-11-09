@@ -28,7 +28,7 @@ ui <- fluidPage(
 )
 server <- function(input, output, session) {
   get_data <- reactive({
-    invalidateLater(millis = 500)
+    invalidateLater(millis = 5)
     tbl <- tibble::tibble(
       x = as.character(round(runif(1, 1, 7))),
       y = as.character(round(runif(1, 3, 10))),
@@ -47,7 +47,8 @@ server <- function(input, output, session) {
     filter_core,
     id = "filter_core",
     get_data = dat$get_data,
-    cols = c("x", "y")
+    cols = c("x", "y"),
+    multiple = TRUE
   )
   observeEvent(
     get_data(),
