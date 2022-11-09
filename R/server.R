@@ -159,7 +159,6 @@ filter_core_single <- function(input,
     return(elements)
   })
   filter_data <- reactive({
-    # browser()
     tbl <- get_data()
     selected <- input[["selector"]]
     if (isTruthy(selected)) {
@@ -195,27 +194,26 @@ filter_core <- function(input,
   # })
   filters <- list()
   for (i in seq_along(cols)) {
-    col <- cols[[i]]
-    if (length(filters) == 0) {
-      # browser()
-      filters[[col]] <- callModule(
-        filter_core_single,
-        id = col,
-        col = col,
-        get_data = get_data
-      )
-    } else {
-      prev_data <- filters[[cols[[(i - 1)]]]]
-      browser()
-      filters[[col]] <- callModule(
-        filter_core_single,
-        id = col,
-        col = col,
-        get_data = prev_data
-      )
-    }
+    local({ # if not forcing local eval using local({}) then the lazy loop will repeat the final value instead of looping
+      col <- cols[[i]]
+      if (length(filters) == 0) {
+        filters[[col]] <<- callModule( # Max: Ugh... <<-
+          filter_core_single,
+          id = col,
+          col = col,
+          get_data = get_data
+        )
+      } else {
+        prev_data <- filters[[cols[[(i - 1)]]]]
+        filters[[col]] <<- callModule( # Max: Ugh... <<-
+          filter_core_single,
+          id = col,
+          col = col,
+          get_data = prev_data
+        )
+      }
+    })
   }
-  browser()
   # filter_data <- reactive({
   #   tbl <- get_data()
   #   req_rows(tbl)
