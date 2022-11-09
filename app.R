@@ -33,15 +33,14 @@ server <- function(input, output, session) {
   flt <- shiny::callModule(
     filter_core,
     id = "test-filter_core",
-    get_data = dat$get_data
+    get_data = dat$get_data,
+    cols = c("x", "y")
   )
   observeEvent(
     get_data(),
     {
       if (nrow(dat$get_data()) < 5) {
         dat$set_update(get_data())
-      # } else {
-      #   browser()
       }
     }
   )
