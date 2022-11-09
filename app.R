@@ -13,7 +13,7 @@ logger::log_info("current log level is {log_level}:{attr(log_level, 'level')}")
 
 
 ui <- fluidPage(
-  filter_core_ui(id = "test-filter_core")
+  filter_core_ui(id = "filter_core")
 )
 server <- function(input, output, session) {
   get_data <- reactive({
@@ -25,14 +25,14 @@ server <- function(input, output, session) {
   })
   dat <- shiny::callModule(
     table_schema,
-    id = "test-table_schema",
+    id = "table_schema",
     data = tibble::tibble(x = character(), y = character(), value = double(0)),
     schema = list(),
     keys_ignore = c("value")
   )
   flt <- shiny::callModule(
     filter_core,
-    id = "test-filter_core",
+    id = "filter_core",
     get_data = dat$get_data,
     cols = c("x", "y")
   )
@@ -46,7 +46,7 @@ server <- function(input, output, session) {
   )
   observeEvent(flt$get_data(), {
     print(flt$get_data())
-    browser()
+    # browser()
   })
 }
 

@@ -144,20 +144,18 @@ filter_core_single <- function(input,
                                col,
                                get_data = shiny::reactive) {
   ns <- session[["ns"]]
-  output[[col]] <- renderUI({
+  output[["ui"]] <- renderUI({
     tbl <- get_data()
     req_rows(tbl)
-    tbl <- dplyr::select(tbl, dplyr::all_of(col))
-    ids <- shiny::ns(names(tbl))
-    choices <- lapply(tbl, unique)
-    elements <- purrr::map2(ids, choices, function(id, choices) {
+    choices <- dplyr::pull(tbl, dplyr::all_of(col))
+    elements <- list(
       shiny::selectInput(
-        inputId = id,
-        label = id,
+        inputId = ns("selector"),
+        label = "SELECTOR",
         choices = choices,
-        selected = isolate(input[[id]])
+        selected = isolate(input[["selector"]])
       )
-    })
+    )
     return(elements)
   })
 }
@@ -172,37 +170,22 @@ filter_core <- function(input,
   output[["ui"]] <- renderUI({
     tbl <- get_data()
     req_rows(tbl)
-    ids <- ns(names(tbl))
-    choices <- lapply(tbl, unique)
-    elements <- purrr::map2(ids, choices, function(id, choices) {
-      shiny::selectInput(
-        inputId = id,
-        label = id,
-        choices = choices,
-        selected = isolate(input[[id]])
-      )
-    })
-    return(elements)
-  })
-  output[["filter_cols"]] <- renderUI({
-    tbl <- get_data()
-    req_rows(tbl)
-    ids <- ns(names(tbl))
+    ids <- paste(ns(names(tbl)), "ui", sep = "-")
     elements <- lapply(ids, function(id) {
       element <- uiOutput(outputId = id)
       return(element)
     })
     return(elements)
   })
-  # filters <- lapply(cols, function(col) {
-  #   filter <- callModule(
-  #     filter_core_single,
-  #     id = ns(col),
-  #     col = col,
-  #     get_data = get_data
-  #   )
-  #   return(filter)
-  # })
+  filters <- lapply(cols, function(col) {
+    filter <- callModule(
+      filter_core_single,
+      id = col,
+      col = col,
+      get_data = dplyr::select(get_data, all_of(col))
+    )
+    return(filter)
+  })
   filter_data <- reactive({
     tbl <- get_data()
     req_rows(tbl)
