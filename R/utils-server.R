@@ -13,42 +13,66 @@ get_timestamp <- function(i = NULL, size = as.integer(14)) {
   logger::log_trace("return shiny.table.store::get_timestamp")
   return(timestamp)
 }
-cat_lists <- function(list1, list2) {
+
+cat_lists <- function(list1, list2, keys = NULL) {
   logger::log_trace("call shiny.table.store::cat_lists")
   # https://stackoverflow.com/questions/18538977/combine-merge-lists-by-elements-names
-  keys <- unique(c(names(list1), names(list2)))
+  if (is.null(keys)) {
+    keys <- unique(c(names(list1), names(list2)))
+  }
   lists <- magrittr::set_names(purrr::map2(list1[keys], list2[keys], c), keys)
   logger::log_trace("return shiny.table.store::cat_lists")
   return(lists)
 }
+
 has_length <- purrr::compose(as.logical, length)
 has_rows <- purrr::compose(as.logical, nrow)
 req_length <- purrr::compose(shiny::req, has_length)
 req_rows <- purrr::compose(shiny::req, has_rows)
+not_truthy <- purrr::compose(magrittr::not, shiny::isTruthy)
+has_names <- purrr::compose(magrittr::not, is.null, names)
+
 unique_tbl <- function(left, right, ...) {
+  logger::log_trace("call shiny.table.store::unique_tbl")
   stopifnot(is(left, "data.frame")) # a tibble::tibble() is OK too
   stopifnot(is(right, "data.frame"))
-  logger::log_trace("call shiny.table.store::unique_tbl")
   tbl <- dplyr::bind_rows(left, dplyr::anti_join(right, left, ...))
   logger::log_trace("return shiny.table.store::unique_tbl")
   return(tbl)
 }
-not_truthy <- purrr::compose(magrittr::not, shiny::isTruthy)
+
 ifnull <- function(obj, then, test = not_truthy) {
+  logger::log_trace("call shiny.table.store::ifnull")
   if (isTRUE(test(obj))) {
     output <- then
   } else {
     output <- obj
   }
+  logger::log_trace("return shiny.table.store::ifnull")
   return(output)
 }
 
+sort_by_name <- function(list) {
+  logger::log_trace("call shiny.table.store::sort_by_name")
+  list <- list[order(names(list))]
+  logger::log_trace("return shiny.table.store::sort_by_name")
+  return(list)
+}
+
 tbl_from_history <- function(history, keys_ignore = NULL) {
+  logger::log_trace("call shiny.table.store::tbl_from_history")
   stopifnot(is(history, "list"))
-  if (magrittr::not(is.null(names(history)))) {
-    history <- history[order(names(history))]
-  }
+  if (has_names(history)) { history <- sort_by_name(history) }
   keys <- setdiff(purrr::reduce(lapply(history, names), intersect), keys_ignore)
   tbl <- purrr::reduce(history, unique_tbl, by = keys)
+  logger::log_trace("return shiny.table.store::tbl_from_history")
   return(tbl)
+}
+
+schema_from_history <- function(history) {
+  logger::log_trace("call shiny.table.store::schema_from_history")
+  if (has_names(history)) { history <- sort_by_name(history) }
+  schema <- purrr::reduce(history, cat_lists)
+  logger::log_trace("return shiny.table.store::schema_from_history")
+  return(schema)
 }

@@ -61,8 +61,7 @@ schema_core <- function(input,
   history[[get_timestamp(i = as.integer(0))]] <- schema
   get_schema <- shiny::reactive({
     history <- shiny::reactiveValuesToList(history)
-    history <- history[order(names(history))]
-    schema <- purrr::reduce(history, cat_lists)
+    schema <- schema_from_history(history)
     return(schema)
   })
   apply_schema <- shiny::reactive({
