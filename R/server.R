@@ -138,13 +138,11 @@ filter_core_ui <- function(id) {
   return(elements)
 }
 
-filter_core_single <- function(
-  input,
-  output,
-  session,
-  col,
-  get_data = shiny::reactive
-) {
+filter_core_single <- function(input,
+                               output,
+                               session,
+                               col,
+                               get_data = shiny::reactive) {
   ns <- session[["ns"]]
   output[[col]] <- renderUI({
     tbl <- get_data()
@@ -165,29 +163,27 @@ filter_core_single <- function(
 }
 
 #' @export
-filter_core <- function(
-  input,
-  output,
-  session,
-  cols,
-  get_data = shiny::reactive
-) {
+filter_core <- function(input,
+                        output,
+                        session,
+                        cols,
+                        get_data = shiny::reactive) {
   ns <- session[["ns"]]
-  # output[["ui"]] <- renderUI({
-  #   tbl <- get_data()
-  #   req_rows(tbl)
-  #   ids <- ns(names(tbl))
-  #   choices <- lapply(tbl, unique)
-  #   elements <- purrr::map2(ids, choices, function(id, choices) {
-  #     shiny::selectInput(
-  #       inputId = id,
-  #       label = id,
-  #       choices = choices,
-  #       selected = isolate(input[[id]])
-  #     )
-  #   })
-  #   return(elements)
-  # })
+  output[["ui"]] <- renderUI({
+    tbl <- get_data()
+    req_rows(tbl)
+    ids <- ns(names(tbl))
+    choices <- lapply(tbl, unique)
+    elements <- purrr::map2(ids, choices, function(id, choices) {
+      shiny::selectInput(
+        inputId = id,
+        label = id,
+        choices = choices,
+        selected = isolate(input[[id]])
+      )
+    })
+    return(elements)
+  })
   output[["filter_cols"]] <- renderUI({
     tbl <- get_data()
     req_rows(tbl)
@@ -198,17 +194,15 @@ filter_core <- function(
     })
     return(elements)
   })
-
-  filters <- lapply(cols, function(col) {
-    filter <- callModule(
-      filter_core_single,
-      id = ns(col),
-      col = col,
-      get_data = get_data
-    )
-    return(filter)
-  })
-
+  # filters <- lapply(cols, function(col) {
+  #   filter <- callModule(
+  #     filter_core_single,
+  #     id = ns(col),
+  #     col = col,
+  #     get_data = get_data
+  #   )
+  #   return(filter)
+  # })
   filter_data <- reactive({
     tbl <- get_data()
     req_rows(tbl)
