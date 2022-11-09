@@ -39,7 +39,7 @@ table_store <- function(input,
       data <- engine$get_data()
       keys <- setdiff(intersect(names(update), names(data)), keys_ignore)
       update <- dplyr::anti_join(update, data, by = keys)
-      if (isTRUE(as.logical(nrow(update)))) {
+      if (isTRUE(has_rows(update))) {
         idx <- length(shiny::reactiveValuesToList(engine$history))
         engine$history[[get_timestamp(i = idx)]] <- update
       }
@@ -148,15 +148,12 @@ filter_core_single <- function(input,
   output[["ui"]] <- renderUI({
     tbl <- get_data()
     req_rows(tbl)
-    choices <- dplyr::pull(tbl, dplyr::all_of(col))
-    # selected <- isolate(ifnull(input[["selector"]], then = dplyr::last(choices)))
-    selected <- isolate(input[["selector"]])
     elements <- list(
       shiny::selectInput(
         inputId = ns("selector"),
         label = col,
-        choices = choices,
-        selected = selected,
+        choices = dplyr::pull(tbl, dplyr::all_of(col)),
+        selected = isolate(input[["selector"]]),
         multiple = multiple
       )
     )
