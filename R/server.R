@@ -158,6 +158,16 @@ filter_core_single <- function(input,
     )
     return(elements)
   })
+  filter_data <- reactive({
+    # browser()
+    tbl <- get_data()
+    selected <- input[["selector"]]
+    if (isTruthy(selected)) {
+      tbl <- dplyr::filter(tbl, !!rlang::sym(col) %in% input[["selector"]])
+    }
+    return(tbl)
+  })
+  return(filter_data)
 }
 
 #' @export
@@ -170,53 +180,80 @@ filter_core <- function(input,
   output[["ui"]] <- renderUI({
     tbl <- get_data()
     req_rows(tbl)
-    ids <- paste(ns(names(tbl)), "ui", sep = "-")
-    elements <- lapply(ids, function(id) {
-      element <- uiOutput(outputId = id)
-      return(element)
-    })
+    ids <- ns(names(tbl))
+    elements <- lapply(ids, filter_core_ui)
     return(elements)
   })
-  filters <- lapply(cols, function(col) {
-    filter <- callModule(
-      filter_core_single,
-      id = col,
-      col = col,
-      get_data = dplyr::select(get_data, all_of(col))
-    )
-    return(filter)
-  })
+  # filters <- lapply(cols, function(col) {
+  #   filter <- callModule(
+  #     filter_core_single,
+  #     id = col,
+  #     col = col,
+  #     get_data = get_data
+  #   )
+  #   return(filter)
+  # })
+  filters <- list()
+  for (i in seq_along(cols)) {
+    col <- cols[[i]]
+    if (length(filters) == 0) {
+      # browser()
+      filters[[col]] <- callModule(
+        filter_core_single,
+        id = col,
+        col = col,
+        get_data = get_data
+      )
+    } else {
+      prev_data <- filters[[cols[[(i - 1)]]]]
+      browser()
+      filters[[col]] <- callModule(
+        filter_core_single,
+        id = col,
+        col = col,
+        get_data = prev_data
+      )
+    }
+  }
+  browser()
+  # filter_data <- reactive({
+  #   tbl <- get_data()
+  #   req_rows(tbl)
+  #   ids <- colnames(tbl)
+  #   vals <- setNames(
+  #     lapply(ids, function(id, l = input) {
+  #       val <- l[[id]]
+  #       if (shiny::isTruthy(val)) {
+  #         item <- tibble::tibble(!!rlang::sym(id) := setNames(val, id))
+  #         return(item)
+  #       }
+  #     }),
+  #     ids
+  #   )
+  #   out <- purrr::reduce(
+  #     .x = vals,
+  #     .f = function(init, flt) {
+  #       id <- names(flt)
+  #       if (shiny::isTruthy(id)) {
+  #         tbl <- dplyr::filter(init, !!dplyr::sym(id) %in% dplyr::pull(flt, id))
+  #         if (magrittr::not(has_rows(tbl))) {
+  #           tbl <- init
+  #         }
+  #       } else {
+  #         tbl <- init
+  #       }
+  #       return(tbl)
+  #     },
+  #     .init = tbl
+  #   )
+  #   return(out)
+  # })
   filter_data <- reactive({
-    tbl <- get_data()
-    req_rows(tbl)
-    ids <- colnames(tbl)
-    vals <- setNames(
-      lapply(ids, function(id, l = input) {
-        val <- l[[id]]
-        if (shiny::isTruthy(val)) {
-          item <- tibble::tibble(!!rlang::sym(id) := setNames(val, id))
-          return(item)
-        }
-      }),
-      ids
+    out <- lapply(
+      filters, function(flt) {
+        return(flt())
+      }
     )
-    out <- purrr::reduce(
-      .x = vals,
-      .f = function(init, flt) {
-        id <- names(flt)
-        if (shiny::isTruthy(id)) {
-          tbl <- dplyr::filter(init, !!dplyr::sym(id) %in% dplyr::pull(flt, id))
-          if (magrittr::not(has_rows(tbl))) {
-            tbl <- init
-          }
-        } else {
-          tbl <- init
-        }
-        return(tbl)
-      },
-      .init = tbl
-    )
-    return(out)
   })
   return(list(
     "get_data" = filter_data
