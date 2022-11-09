@@ -26,7 +26,9 @@ has_rows <- purrr::compose(as.logical, nrow)
 req_length <- purrr::compose(shiny::req, has_length)
 req_rows <- purrr::compose(shiny::req, has_rows)
 unique_tbl <- function(left, right, ...) {
+  logger::log_trace("call shiny.table.store::unique_tbl")
   tbl <- dplyr::bind_rows(left, dplyr::anti_join(right, left, ...))
+  logger::log_trace("return shiny.table.store::unique_tbl")
   return(tbl)
 }
 not_truthy <- purrr::compose(magrittr::not, shiny::isTruthy)
