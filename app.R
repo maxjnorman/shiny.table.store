@@ -13,11 +13,22 @@ logger::log_info("current log level is {log_level}:{attr(log_level, 'level')}")
 
 
 ui <- fluidPage(
-  filter_core_ui(id = "filter_core")
+  column(
+    width = 4,
+    tableOutput(outputId = "data_tbl"),
+  ),
+  column(
+    width = 4,
+    filter_core_ui(id = "filter_core")
+  ),
+  column(
+    width = 4,
+    tableOutput(outputId = "filter_tbl"),
+  )
 )
 server <- function(input, output, session) {
   get_data <- reactive({
-    invalidateLater(millis = 5)
+    invalidateLater(millis = 500)
     tbl <- tibble::tibble(
       x = as.character(round(runif(1, 1, 7))),
       y = as.character(round(runif(1, 3, 10))),
@@ -36,7 +47,7 @@ server <- function(input, output, session) {
     filter_core,
     id = "filter_core",
     get_data = dat$get_data,
-    cols = c("y", "x")
+    cols = c("x", "y")
   )
   observeEvent(
     get_data(),
@@ -48,6 +59,18 @@ server <- function(input, output, session) {
   )
   observeEvent(flt$get_data(), {
     print(flt$get_data())
+  })
+  output[["data_tbl"]] <- renderTable(
+    dplyr::arrange(
+      dat$get_data(),
+      dplyr::across(
+        dplyr::any_of(c("x", "y")),
+        purrr::compose(as.double, as.character)
+      )
+    )
+  )
+  output[["filter_tbl"]] <- renderTable({
+    flt$get_data()
   })
 }
 

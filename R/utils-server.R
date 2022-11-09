@@ -29,3 +29,12 @@ unique_tbl <- function(left, right, ...) {
   tbl <- dplyr::bind_rows(left, dplyr::anti_join(right, left, ...))
   return(tbl)
 }
+not_truthy <- purrr::compose(magrittr::not, shiny::isTruthy)
+ifnull <- function(obj, then, test = not_truthy) {
+  if (isTRUE(test(obj))) {
+    output <- then
+  } else {
+    output <- obj
+  }
+  return(output)
+}

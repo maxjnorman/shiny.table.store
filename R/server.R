@@ -148,12 +148,13 @@ filter_core_single <- function(input,
     tbl <- get_data()
     req_rows(tbl)
     choices <- dplyr::pull(tbl, dplyr::all_of(col))
+    selected <- isolate(ifnull(input[["selector"]], then = dplyr::last(choices)))
     elements <- list(
       shiny::selectInput(
         inputId = ns("selector"),
-        label = "SELECTOR",
+        label = col,
         choices = choices,
-        selected = isolate(input[["selector"]])
+        selected = selected
       )
     )
     return(elements)
@@ -162,7 +163,7 @@ filter_core_single <- function(input,
     tbl <- get_data()
     selected <- input[["selector"]]
     if (isTruthy(selected)) {
-      tbl <- dplyr::filter(tbl, !!rlang::sym(col) %in% input[["selector"]])
+      tbl <- dplyr::filter(tbl, !!rlang::sym(col) %in% selected)
     }
     return(tbl)
   })
@@ -183,18 +184,9 @@ filter_core <- function(input,
     elements <- lapply(ids, filter_core_ui)
     return(elements)
   })
-  # filters <- lapply(cols, function(col) {
-  #   filter <- callModule(
-  #     filter_core_single,
-  #     id = col,
-  #     col = col,
-  #     get_data = get_data
-  #   )
-  #   return(filter)
-  # })
   filters <- list()
   for (i in seq_along(cols)) {
-    local({ # if not forcing local eval using local({}) then the lazy loop will repeat the final value instead of looping
+    local({ # force local evaluation to prevent lazy errors from the for loop
       col <- cols[[i]]
       if (length(filters) == 0) {
         filters[[col]] <<- callModule( # Max: Ugh... <<-
@@ -214,46 +206,9 @@ filter_core <- function(input,
       }
     })
   }
-  # filter_data <- reactive({
-  #   tbl <- get_data()
-  #   req_rows(tbl)
-  #   ids <- colnames(tbl)
-  #   vals <- setNames(
-  #     lapply(ids, function(id, l = input) {
-  #       val <- l[[id]]
-  #       if (shiny::isTruthy(val)) {
-  #         item <- tibble::tibble(!!rlang::sym(id) := setNames(val, id))
-  #         return(item)
-  #       }
-  #     }),
-  #     ids
-  #   )
-  #   out <- purrr::reduce(
-  #     .x = vals,
-  #     .f = function(init, flt) {
-  #       id <- names(flt)
-  #       if (shiny::isTruthy(id)) {
-  #         tbl <- dplyr::filter(init, !!dplyr::sym(id) %in% dplyr::pull(flt, id))
-  #         if (magrittr::not(has_rows(tbl))) {
-  #           tbl <- init
-  #         }
-  #       } else {
-  #         tbl <- init
-  #       }
-  #       return(tbl)
-  #     },
-  #     .init = tbl
-  #   )
-  #   return(out)
-  # })
-  filter_data <- reactive({
-    out <- lapply(
-      filters, function(flt) {
-        return(flt())
-      }
-    )
-  })
+  get_steps <- reactive(lapply(filters, function(filter) { filter() }))
   return(list(
-    "get_data" = filter_data
+    "get_data" = dplyr::last(filters),
+    "get_steps" = get_steps
   ))
 }
