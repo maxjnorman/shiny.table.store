@@ -78,10 +78,10 @@ schema_core <- function(input,
       keys <- setdiff(names(data), keys_ignore)
       schema <- get_schema()
       schema_tbl <- lapply(data[keys], unique)
-      if (is.null(names(schema))) {
-        update <- schema_tbl
-      } else {
+      if (has_names(schema)) {
         update <- purrr::map2(schema_tbl, schema, setdiff)
+      } else {
+        update <- schema_tbl
       }
       if (any(sapply(update, has_length))) {
         idx <- length(shiny::reactiveValuesToList(history))
