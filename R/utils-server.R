@@ -17,9 +17,7 @@ get_timestamp <- function(i = NULL, size = as.integer(14)) {
 cat_lists <- function(list1, list2, keys = NULL) {
   logger::log_trace("call shiny.table.store::cat_lists")
   # https://stackoverflow.com/questions/18538977/combine-merge-lists-by-elements-names
-  if (is.null(keys)) {
-    keys <- unique(c(names(list1), names(list2)))
-  }
+  if (is.null(keys)) { keys <- unique(c(names(list1), names(list2))) }
   lists <- magrittr::set_names(purrr::map2(list1[keys], list2[keys], c), keys)
   logger::log_trace("return shiny.table.store::cat_lists")
   return(lists)
@@ -59,11 +57,18 @@ sort_by_name <- function(list) {
   return(list)
 }
 
+get_history_common_keys <- function(history, keys_ignore = NULL) {
+  keys <- lapply(history, names)
+  keys <- purrr::reduce(keys, intersect)
+  keys <- setdiff(keys, keys_ignore)
+  return(keys)
+}
+
 tbl_from_history <- function(history, keys_ignore = NULL) {
   logger::log_trace("call shiny.table.store::tbl_from_history")
   stopifnot(is(history, "list"))
   if (has_names(history)) { history <- sort_by_name(history) }
-  keys <- setdiff(purrr::reduce(lapply(history, names), intersect), keys_ignore)
+  keys <- get_history_common_keys(history, keys_ignore = keys_ignore)
   tbl <- purrr::reduce(history, unique_tbl, by = keys)
   logger::log_trace("return shiny.table.store::tbl_from_history")
   return(tbl)
