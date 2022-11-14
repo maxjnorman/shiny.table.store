@@ -15,14 +15,17 @@ logger::log_info("current log level is {log_level}:{attr(log_level, 'level')}")
 ui <- fluidPage(
   column(
     width = 4,
+    h2("Full data set"),
     tableOutput(outputId = "data_tbl"),
   ),
   column(
     width = 4,
+    h2("Filter controls"),
     filter_core_ui(id = "filter_core")
   ),
   column(
     width = 4,
+    h2("Filtered data"),
     tableOutput(outputId = "filter_tbl"),
   )
 )
