@@ -57,12 +57,12 @@ sort_by_name <- function(list) {
   return(list)
 }
 
-get_history_common_keys <- function(history, keys_ignore = NULL) {
-  logger::log_trace("call shiny.table.store::get_history_common_keys")
+get_common_keys <- function(history, keys_ignore = NULL) {
+  logger::log_trace("call shiny.table.store::get_common_keys")
   keys <- lapply(history, names)
   keys <- purrr::reduce(keys, intersect)
   keys <- setdiff(keys, keys_ignore)
-    logger::log_trace("return shiny.table.store::get_history_common_keys")
+    logger::log_trace("return shiny.table.store::get_common_keys")
   return(keys)
 }
 
@@ -70,7 +70,7 @@ tbl_from_history <- function(history, keys_ignore = NULL) {
   logger::log_trace("call shiny.table.store::tbl_from_history")
   stopifnot(is(history, "list"))
   if (has_names(history)) history <- sort_by_name(history)
-  keys <- get_history_common_keys(history, keys_ignore = keys_ignore)
+  keys <- get_common_keys(history, keys_ignore = keys_ignore)
   tbl <- purrr::reduce(history, unique_tbl, by = keys)
   logger::log_trace("return shiny.table.store::tbl_from_history")
   return(tbl)
@@ -100,10 +100,12 @@ make_labels_from_cols <- function(cols, labels) {
 
 fun_apply_schema <- function(data, schema, keys_ignore) {
   logger::log_trace("call shiny.table.store::fun_apply_schema")
-  keys_tbl <- purrr::map2_df(data[names(schema)], schema, factor)
+  common_keys <- get_common_keys(list(data, schema), keys_ignore)
+  keys_tbl <- purrr::map2_df(data[common_keys], schema[common_keys], factor)
+  keys_ignore <- intersect(keys_ignore, colnames(data))
   keys_ignore <- ifthen(keys_ignore, test = not_truthy, then = NULL)
-  values_tbl <- data[keys_ignore]
-  out <- dplyr::bind_cols(keys_tbl, values_tbl)
+  ignore_tbl <- data[keys_ignore]
+  out <- dplyr::bind_cols(keys_tbl, ignore_tbl)
   logger::log_trace("return shiny.table.store::fun_apply_schema")
   return(out)
 }

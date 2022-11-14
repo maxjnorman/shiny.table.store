@@ -35,7 +35,7 @@ table_store <- function(input,
     {
       update <- set_update()
       data <- engine$get_data()
-      keys <- get_history_common_keys(list(update, data), keys_ignore = keys_ignore)
+      keys <- get_common_keys(list(update, data), keys_ignore = keys_ignore)
       update <- dplyr::anti_join(update, data, by = keys)
       if (isTRUE(has_rows(update))) {
         idx <- length(shiny::reactiveValuesToList(engine$history))
@@ -72,7 +72,7 @@ schema_core <- function(input,
     get_data(),
     {
       data <- get_data()
-      keys <- get_history_common_keys(list(data), keys_ignore = keys_ignore)
+      keys <- get_common_keys(list(data), keys_ignore = keys_ignore)
       schema <- get_schema()
       schema_tbl <- lapply(data[keys], unique)
       if (has_names(schema)) {
