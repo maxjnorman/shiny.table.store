@@ -51,7 +51,7 @@ server <- function(input, output, session) {
     id = "filter_core",
     get_data = dat$get_data,
     cols = c("x", "y"),
-    labels = function(col) { paste("FLT:", col) }
+    labels = function(col) paste("FLT:", col)
   )
   observeEvent(
     get_data(),

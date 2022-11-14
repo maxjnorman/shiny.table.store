@@ -217,7 +217,7 @@ filter_core <- function(input,
       }
     })
   }
-  get_steps <- reactive(lapply(filters, function(filter) { filter() }))
+  get_steps <- reactive(lapply(filters, function(filter) filter()))
   return(list(
     "get_data" = dplyr::last(filters),
     "get_steps" = get_steps

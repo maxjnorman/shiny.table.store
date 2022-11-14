@@ -17,7 +17,7 @@ get_timestamp <- function(i = NULL, size = as.integer(14)) {
 cat_lists <- function(list1, list2, keys = NULL) {
   logger::log_trace("call shiny.table.store::cat_lists")
   # https://stackoverflow.com/questions/18538977/combine-merge-lists-by-elements-names
-  if (is.null(keys)) { keys <- unique(c(names(list1), names(list2))) }
+  if (is.null(keys)) keys <- unique(c(names(list1), names(list2)))
   lists <- magrittr::set_names(purrr::map2(list1[keys], list2[keys], c), keys)
   logger::log_trace("return shiny.table.store::cat_lists")
   return(lists)
@@ -67,7 +67,7 @@ get_history_common_keys <- function(history, keys_ignore = NULL) {
 tbl_from_history <- function(history, keys_ignore = NULL) {
   logger::log_trace("call shiny.table.store::tbl_from_history")
   stopifnot(is(history, "list"))
-  if (has_names(history)) { history <- sort_by_name(history) }
+  if (has_names(history)) history <- sort_by_name(history)
   keys <- get_history_common_keys(history, keys_ignore = keys_ignore)
   tbl <- purrr::reduce(history, unique_tbl, by = keys)
   logger::log_trace("return shiny.table.store::tbl_from_history")
@@ -76,7 +76,7 @@ tbl_from_history <- function(history, keys_ignore = NULL) {
 
 schema_from_history <- function(history) {
   logger::log_trace("call shiny.table.store::schema_from_history")
-  if (has_names(history)) { history <- sort_by_name(history) }
+  if (has_names(history)) history <- sort_by_name(history)
   schema <- purrr::reduce(history, cat_lists)
   logger::log_trace("return shiny.table.store::schema_from_history")
   return(schema)
