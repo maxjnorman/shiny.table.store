@@ -90,9 +90,9 @@ make_labels_from_cols <- function(cols, labels) {
     labels <- cols
   } else if (is(labels, "function")) { # if a function is passed
     labels <- labels(cols)
-  } else if (length(labels) == 1) {
+  } else if (length(labels) == 1) { # if a single value is passed
     labels <- rep(labels, length(cols))
-  }
+  } # else just use the labels that were provided as-is
   stopifnot(length(labels) == length(cols))
   logger::log_trace("return shiny.table.store::make_labels_from_cols")
   return(labels)
