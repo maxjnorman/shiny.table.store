@@ -132,6 +132,7 @@ filter_core_ui <- function(id) {
   return(elements)
 }
 
+#' @export
 filter_core_single <- function(input,
                                output,
                                session,
