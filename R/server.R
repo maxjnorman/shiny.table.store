@@ -64,12 +64,10 @@ schema_core <- function(input,
     schema <- schema_from_history(history)
     return(schema)
   })
-  rct_apply_schema <- shiny::reactive({
-    data <- get_data()
-    schema <- get_schema()
-    out <- fun_apply_schema(data = data, schema = schema, keys_ignore = keys_ignore)
-    return(out)
-  })
+  mod_apply_schema <- purrr::partial(fun_apply_schema, keys_ignore = keys_ignore)
+  rct_apply_schema <- shiny::reactive(
+    mod_apply_schema(data = get_data(), schema = get_schema())
+  )
   shiny::observeEvent(
     get_data(),
     {
