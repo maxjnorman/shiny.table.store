@@ -58,9 +58,11 @@ sort_by_name <- function(list) {
 }
 
 get_history_common_keys <- function(history, keys_ignore = NULL) {
+  logger::log_trace("call shiny.table.store::get_history_common_keys")
   keys <- lapply(history, names)
   keys <- purrr::reduce(keys, intersect)
   keys <- setdiff(keys, keys_ignore)
+    logger::log_trace("return shiny.table.store::get_history_common_keys")
   return(keys)
 }
 
@@ -96,7 +98,7 @@ make_labels_from_cols <- function(cols, labels) {
   return(labels)
 }
 
-fun_apply_schema <- function(data, schema, keys_ignore = NULL) {
+fun_apply_schema <- function(data, schema, keys_ignore) {
   logger::log_trace("call shiny.table.store::fun_apply_schema")
   keys_tbl <- purrr::map2_df(data[names(schema)], schema, factor)
   keys_ignore <- ifthen(keys_ignore, test = not_truthy, then = NULL)
