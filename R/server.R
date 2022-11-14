@@ -6,11 +6,9 @@ table_core <- function(input,
                        keys_ignore = c("value")) {
   history <- shiny::reactiveValues()
   history[[get_timestamp(i = as.integer(0))]] <- data
-  get_data <- shiny::reactive({
-    history <- shiny::reactiveValuesToList(history)
-    tbl <- tbl_from_history(history, keys_ignore = keys_ignore)
-    return(tbl)
-  })
+  make_tbl <- purrr::partial(tbl_from_history, keys_ignore = keys_ignore)
+  make_data <- purrr::compose(make_tbl, shiny::reactiveValuesToList)
+  get_data <- shiny::reactive(make_data(history))
   return(list(
     "get_data" = get_data,
     "history" = history
@@ -29,13 +27,14 @@ table_store <- function(input,
     data = data,
     keys_ignore = keys_ignore
   )
+  get_keys <- purrr::partial(get_common_keys, keys_ignore = keys_ignore)
   set_update <- shiny::reactiveVal()
   shiny::observeEvent(
     set_update(),
     {
       update <- set_update()
       data <- engine$get_data()
-      keys <- get_common_keys(list(update, data), keys_ignore = keys_ignore)
+      keys <- get_keys(list(update, data))
       update <- dplyr::anti_join(update, data, by = keys)
       if (isTRUE(has_rows(update))) {
         idx <- length(shiny::reactiveValuesToList(engine$history))

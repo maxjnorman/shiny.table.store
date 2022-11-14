@@ -114,9 +114,9 @@ apply_schema <- function(data, schema, keys_ignore = NULL) {
   keys_ignore <- ifthen(keys_ignore, test = not_truthy, then = NULL)
   tbl_keys <- purrr::map2_df(data[keys_common], schema[keys_common], factor)
   tbl_ignore <- data[keys_ignore]
-  if (has_rows(tbl_keys) & has_rows(tbl_ignore)) {
+  if (isTRUE(has_rows(tbl_keys)) & isTRUE(has_rows(tbl_ignore))) {
     out <- dplyr::bind_cols(tbl_keys, tbl_ignore)
-  } else if (has_rows(tbl_keys)) {
+  } else if (isTRUE(has_rows(tbl_keys))) {
     out <- tbl_keys
   } else {
     out <- tbl_ignore
