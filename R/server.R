@@ -6,13 +6,9 @@ table_core <- function(input,
                        keys_ignore = c("value")) {
   history <- shiny::reactiveValues()
   history[[get_timestamp(i = as.integer(0))]] <- data
-  get_data <- shiny::reactive({
-    history <- shiny::reactiveValuesToList(history)
-    history <- history[order(names(history))]
-    keys <- setdiff(purrr::reduce(lapply(history, names), intersect), keys_ignore)
-    tbl <- purrr::reduce(history, unique_tbl, by = keys)
-    return(tbl)
-  })
+  make_tbl <- purrr::partial(tbl_from_history, keys_ignore = keys_ignore)
+  make_data <- purrr::compose(make_tbl, shiny::reactiveValuesToList)
+  get_data <- shiny::reactive(make_data(history))
   return(list(
     "get_data" = get_data,
     "history" = history
@@ -31,15 +27,16 @@ table_store <- function(input,
     data = data,
     keys_ignore = keys_ignore
   )
+  get_keys <- purrr::partial(get_common_keys, keys_ignore = keys_ignore)
   set_update <- shiny::reactiveVal()
   shiny::observeEvent(
     set_update(),
     {
       update <- set_update()
       data <- engine$get_data()
-      keys <- setdiff(intersect(names(update), names(data)), keys_ignore)
+      keys <- get_keys(list(update, data))
       update <- dplyr::anti_join(update, data, by = keys)
-      if (isTRUE(has_rows(update))) {
+      if (istrue_rows(update)) {
         idx <- length(shiny::reactiveValuesToList(engine$history))
         engine$history[[get_timestamp(i = idx)]] <- update
       }
@@ -63,28 +60,24 @@ schema_core <- function(input,
   history[[get_timestamp(i = as.integer(0))]] <- schema
   get_schema <- shiny::reactive({
     history <- shiny::reactiveValuesToList(history)
-    history <- history[order(names(history))]
-    schema <- purrr::reduce(history, cat_lists)
+    schema <- schema_from_history(history)
     return(schema)
   })
-  apply_schema <- shiny::reactive({
-    schema <- get_schema()
-    keys_tbl <- purrr::map2_df(get_data()[names(schema)], schema, factor)
-    values_tbl <- get_data()[keys_ignore]
-    data <- dplyr::bind_cols(keys_tbl, values_tbl)
-    return(data)
-  })
+  mod_apply_schema <- purrr::partial(apply_schema, keys_ignore = keys_ignore)
+  rct_apply_schema <- shiny::reactive(
+    mod_apply_schema(data = get_data(), schema = get_schema())
+  )
   shiny::observeEvent(
     get_data(),
     {
       data <- get_data()
-      keys <- setdiff(names(data), keys_ignore)
+      keys <- get_common_keys(list(data), keys_ignore = keys_ignore)
       schema <- get_schema()
       schema_tbl <- lapply(data[keys], unique)
-      if (is.null(names(schema))) {
-        update <- schema_tbl
-      } else {
+      if (has_names(schema)) {
         update <- purrr::map2(schema_tbl, schema, setdiff)
+      } else {
+        update <- schema_tbl
       }
       if (any(sapply(update, has_length))) {
         idx <- length(shiny::reactiveValuesToList(history))
@@ -93,7 +86,7 @@ schema_core <- function(input,
     }
   )
   return(list(
-    "get_data" = apply_schema,
+    "get_data" = rct_apply_schema,
     "get_schema" = get_schema
   ))
 }
@@ -138,23 +131,26 @@ filter_core_ui <- function(id) {
   return(elements)
 }
 
+#' @export
 filter_core_single <- function(input,
                                output,
                                session,
                                col,
                                get_data,
-                               multiple) {
+                               selectInput = purrr::partial(
+                                 shiny::selectInput,
+                                 label = col,
+                                 multiple = TRUE
+                               )) {
   ns <- session[["ns"]]
   output[["ui"]] <- renderUI({
     tbl <- get_data()
     req_rows(tbl)
     elements <- list(
-      shiny::selectInput(
+      selectInput(
         inputId = ns("selector"),
-        label = col,
         choices = dplyr::pull(tbl, dplyr::all_of(col)),
-        selected = isolate(input[["selector"]]),
-        multiple = multiple
+        selected = isolate(input[["selector"]])
       )
     )
     return(elements)
@@ -175,8 +171,12 @@ filter_core <- function(input,
                         output,
                         session,
                         cols,
+                        labels = paste("Filter:", cols),
                         get_data = shiny::reactive,
-                        multiple = TRUE) {
+                        selectInput = purrr::partial(
+                          shiny::selectInput,
+                          multiple = TRUE
+                        )) {
   ns <- session[["ns"]]
   output[["ui"]] <- renderUI({
     tbl <- get_data()
@@ -185,31 +185,39 @@ filter_core <- function(input,
     elements <- lapply(ids, filter_core_ui)
     return(elements)
   })
+  labels <- make_labels_from_cols(cols, labels = labels)
   filters <- list()
   for (i in seq_along(cols)) {
     local({ # force local evaluation to prevent lazy errors from the for loop
       col <- cols[[i]]
+      label <- labels[[i]]
       if (length(filters) == 0) {
         filters[[col]] <<- callModule( # Max: Ugh... <<-
           filter_core_single,
           id = col,
           col = col,
           get_data = get_data,
-          multiple = multiple
+          selectInput = purrr::partial(
+            selectInput,
+            label = label
+          )
         )
       } else {
-        prev_data <- filters[[cols[[(i - 1)]]]]
+        prev_data <- filters[[cols[[(i - 1)]]]] # the filtered data at this point
         filters[[col]] <<- callModule( # Max: Ugh... <<-
           filter_core_single,
           id = col,
           col = col,
-          get_data = prev_data,
-          multiple = multiple
+          get_data = prev_data, # pass the filtered data along the chain
+          selectInput = purrr::partial(
+            selectInput,
+            label = label
+          )
         )
       }
     })
   }
-  get_steps <- reactive(lapply(filters, function(filter) { filter() }))
+  get_steps <- reactive(lapply(filters, function(filter) filter()))
   return(list(
     "get_data" = dplyr::last(filters),
     "get_steps" = get_steps
