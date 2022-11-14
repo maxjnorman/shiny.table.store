@@ -74,7 +74,13 @@ server <- function(input, output, session) {
     )
   )
   output[["filter_tbl"]] <- renderTable({
-    flt$get_data()
+    dplyr::arrange(
+      flt$get_data(),
+      dplyr::across(
+        dplyr::any_of(c("x", "y")),
+        purrr::compose(as.double, as.character)
+      )
+    )
   })
 }
 
