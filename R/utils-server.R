@@ -105,7 +105,13 @@ fun_apply_schema <- function(data, schema, keys_ignore) {
   keys_ignore <- intersect(keys_ignore, colnames(data))
   keys_ignore <- ifthen(keys_ignore, test = not_truthy, then = NULL)
   ignore_tbl <- data[keys_ignore]
-  out <- dplyr::bind_cols(keys_tbl, ignore_tbl)
+  if (has_rows(keys_tbl) & has_rows(ignore_tbl)) {
+    out <- dplyr::bind_cols(keys_tbl, ignore_tbl)
+  } else if (has_rows(keys_tbl)) {
+    out <- keys_tbl
+  } else {
+    out <- ignore_tbl
+  }
   logger::log_trace("return shiny.table.store::fun_apply_schema")
   return(out)
 }
