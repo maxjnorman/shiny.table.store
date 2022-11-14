@@ -195,12 +195,12 @@ filter_core <- function(input,
           multiple = multiple
         )
       } else {
-        prev_data <- filters[[cols[[(i - 1)]]]]
+        prev_data <- filters[[cols[[(i - 1)]]]] # the filtered data at this point
         filters[[col]] <<- callModule( # Max: Ugh... <<-
           filter_core_single,
           id = col,
           col = col,
-          get_data = prev_data,
+          get_data = prev_data, # pass the filtered data along the chain
           multiple = multiple
         )
       }
