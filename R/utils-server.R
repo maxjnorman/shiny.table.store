@@ -98,8 +98,15 @@ make_labels_from_cols <- function(cols, labels) {
   return(labels)
 }
 
-fun_apply_schema <- function(data, schema, keys_ignore) {
-  logger::log_trace("call shiny.table.store::fun_apply_schema")
+#' Apply a schema to data
+#'
+#' @param data A tibble::tibble contianing values.
+#' @param schema A named list of character vectors. Each vector is matched to a column in 'data' and transforms it into a factor.
+#' @param keys_ignore A character vector or NULL, these columns are not transformed.
+#' @returns A tibble::tibble.
+#' @noRd
+apply_schema <- function(data, schema, keys_ignore) {
+  logger::log_trace("call shiny.table.store::apply_schema")
   common_keys <- get_common_keys(list(data, schema), keys_ignore)
   keys_tbl <- purrr::map2_df(data[common_keys], schema[common_keys], factor)
   keys_ignore <- intersect(keys_ignore, colnames(data))
@@ -112,6 +119,6 @@ fun_apply_schema <- function(data, schema, keys_ignore) {
   } else {
     out <- ignore_tbl
   }
-  logger::log_trace("return shiny.table.store::fun_apply_schema")
+  logger::log_trace("return shiny.table.store::apply_schema")
   return(out)
 }

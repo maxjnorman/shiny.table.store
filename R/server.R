@@ -64,7 +64,7 @@ schema_core <- function(input,
     schema <- schema_from_history(history)
     return(schema)
   })
-  mod_apply_schema <- purrr::partial(fun_apply_schema, keys_ignore = keys_ignore)
+  mod_apply_schema <- purrr::partial(apply_schema, keys_ignore = keys_ignore)
   rct_apply_schema <- shiny::reactive(
     mod_apply_schema(data = get_data(), schema = get_schema())
   )
