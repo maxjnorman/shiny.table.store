@@ -81,3 +81,15 @@ schema_from_history <- function(history) {
   logger::log_trace("return shiny.table.store::schema_from_history")
   return(schema)
 }
+
+make_labels_from_cols <- function(cols, labels) {
+  if (is.null(labels)) {
+    labels <- cols
+  } else if (is(labels, "function")) { # if a function is passed
+    labels <- labels(cols)
+  } else if (length(labels) == 1) {
+    labels <- rep(labels, length(cols))
+  }
+  stopifnot(length(labels) == length(cols))
+  return(labels)
+}

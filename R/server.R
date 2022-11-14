@@ -140,18 +140,20 @@ filter_core_single <- function(input,
                                session,
                                col,
                                get_data,
-                               multiple) {
+                               selectInput = purrr::partial(
+                                 shiny::selectInput,
+                                 label = col,
+                                 multiple = TRUE
+                               )) {
   ns <- session[["ns"]]
   output[["ui"]] <- renderUI({
     tbl <- get_data()
     req_rows(tbl)
     elements <- list(
-      shiny::selectInput(
+      selectInput(
         inputId = ns("selector"),
-        label = col,
         choices = dplyr::pull(tbl, dplyr::all_of(col)),
-        selected = isolate(input[["selector"]]),
-        multiple = multiple
+        selected = isolate(input[["selector"]])
       )
     )
     return(elements)
@@ -172,8 +174,12 @@ filter_core <- function(input,
                         output,
                         session,
                         cols,
+                        labels = paste("Filter:", cols),
                         get_data = shiny::reactive,
-                        multiple = TRUE) {
+                        selectInput = purrr::partial(
+                          shiny::selectInput,
+                          multiple = TRUE
+                        )) {
   ns <- session[["ns"]]
   output[["ui"]] <- renderUI({
     tbl <- get_data()
@@ -182,17 +188,22 @@ filter_core <- function(input,
     elements <- lapply(ids, filter_core_ui)
     return(elements)
   })
+  labels <- make_labels_from_cols(cols, labels = labels)
   filters <- list()
   for (i in seq_along(cols)) {
     local({ # force local evaluation to prevent lazy errors from the for loop
       col <- cols[[i]]
+      label <- labels[[i]]
       if (length(filters) == 0) {
         filters[[col]] <<- callModule( # Max: Ugh... <<-
           filter_core_single,
           id = col,
           col = col,
           get_data = get_data,
-          multiple = multiple
+          selectInput = purrr::partial(
+            selectInput,
+            label = label
+          )
         )
       } else {
         prev_data <- filters[[cols[[(i - 1)]]]] # the filtered data at this point
@@ -201,7 +212,10 @@ filter_core <- function(input,
           id = col,
           col = col,
           get_data = prev_data, # pass the filtered data along the chain
-          multiple = multiple
+          selectInput = purrr::partial(
+            selectInput,
+            label = label
+          )
         )
       }
     })
