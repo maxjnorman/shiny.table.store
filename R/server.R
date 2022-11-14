@@ -36,7 +36,7 @@ table_store <- function(input,
       data <- engine$get_data()
       keys <- get_keys(list(update, data))
       update <- dplyr::anti_join(update, data, by = keys)
-      if (isTRUE(has_rows(update))) {
+      if (istrue_rows(update)) {
         idx <- length(shiny::reactiveValuesToList(engine$history))
         engine$history[[get_timestamp(i = idx)]] <- update
       }

@@ -25,6 +25,7 @@ cat_lists <- function(list1, list2, keys = NULL) {
 
 has_length <- purrr::compose(as.logical, length)
 has_rows <- purrr::compose(as.logical, nrow)
+istrue_rows <- purrr::compose(isTRUE, has_rows)
 req_length <- purrr::compose(shiny::req, has_length)
 req_rows <- purrr::compose(shiny::req, has_rows)
 not_truthy <- purrr::compose(magrittr::not, shiny::isTruthy)
@@ -114,9 +115,9 @@ apply_schema <- function(data, schema, keys_ignore = NULL) {
   keys_ignore <- ifthen(keys_ignore, test = not_truthy, then = NULL)
   tbl_keys <- purrr::map2_df(data[keys_common], schema[keys_common], factor)
   tbl_ignore <- data[keys_ignore]
-  if (isTRUE(has_rows(tbl_keys)) & isTRUE(has_rows(tbl_ignore))) {
+  if (istrue_rows(tbl_keys) & istrue_rows(tbl_ignore)) {
     out <- dplyr::bind_cols(tbl_keys, tbl_ignore)
-  } else if (isTRUE(has_rows(tbl_keys))) {
+  } else if (istrue_rows(tbl_keys)) {
     out <- tbl_keys
   } else {
     out <- tbl_ignore
