@@ -16,6 +16,7 @@ ui <- fluidPage(
   column(
     width = 4,
     h2("Full data set"),
+    actionButton(inputId = "add_row", label = "Add row"),
     tableOutput(outputId = "data_tbl"),
   ),
   column(
@@ -31,7 +32,8 @@ ui <- fluidPage(
 )
 server <- function(input, output, session) {
   get_data <- reactive({
-    invalidateLater(millis = 5)
+    # invalidateLater(millis = 5)
+    input[["add_row"]]
     tbl <- tibble::tibble(
       x = as.character(round(runif(1, 1, 7))),
       y = as.character(round(runif(1, 3, 10))),
