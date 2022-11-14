@@ -39,14 +39,14 @@ unique_tbl <- function(left, right, ...) {
   return(tbl)
 }
 
-ifnull <- function(obj, then, test = not_truthy) {
-  logger::log_trace("call shiny.table.store::ifnull")
+ifthen <- function(obj, then, test = not_truthy) {
+  logger::log_trace("call shiny.table.store::ifthen")
   if (isTRUE(test(obj))) {
     output <- then
   } else {
     output <- obj
   }
-  logger::log_trace("return shiny.table.store::ifnull")
+  logger::log_trace("return shiny.table.store::ifthen")
   return(output)
 }
 
@@ -96,9 +96,10 @@ make_labels_from_cols <- function(cols, labels) {
   return(labels)
 }
 
-fun_apply_schema <- function(data, schema, keys_ignore) {
+fun_apply_schema <- function(data, schema, keys_ignore = NULL) {
   logger::log_trace("call shiny.table.store::fun_apply_schema")
   keys_tbl <- purrr::map2_df(data[names(schema)], schema, factor)
+  keys_ignore <- ifthen(keys_ignore, test = not_truthy, then = NULL)
   values_tbl <- data[keys_ignore]
   out <- dplyr::bind_cols(keys_tbl, values_tbl)
   logger::log_trace("return shiny.table.store::fun_apply_schema")
