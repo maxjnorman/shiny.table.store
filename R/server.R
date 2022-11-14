@@ -65,11 +65,10 @@ schema_core <- function(input,
     return(schema)
   })
   apply_schema <- shiny::reactive({
+    data <- get_data()
     schema <- get_schema()
-    keys_tbl <- purrr::map2_df(get_data()[names(schema)], schema, factor)
-    values_tbl <- get_data()[keys_ignore]
-    data <- dplyr::bind_cols(keys_tbl, values_tbl)
-    return(data)
+    out <- do_apply_schema(data = data, schema = schema, keys_ignore = keys_ignore)
+    return(out)
   })
   shiny::observeEvent(
     get_data(),
