@@ -107,17 +107,19 @@ make_labels_from_cols <- function(cols, labels) {
 #' @noRd
 apply_schema <- function(data, schema, keys_ignore) {
   logger::log_trace("call shiny.table.store::apply_schema")
-  common_keys <- get_common_keys(list(data, schema), keys_ignore)
-  keys_tbl <- purrr::map2_df(data[common_keys], schema[common_keys], factor)
+  keys_common <- get_common_keys(list(data, schema), keys_ignore)
+  keys_missed <- setdiff(names(data), keys_common)
+  keys_ignore <- unique(c(keys_ignore, keys_missed))
   keys_ignore <- intersect(keys_ignore, colnames(data))
   keys_ignore <- ifthen(keys_ignore, test = not_truthy, then = NULL)
-  ignore_tbl <- data[keys_ignore]
-  if (has_rows(keys_tbl) & has_rows(ignore_tbl)) {
-    out <- dplyr::bind_cols(keys_tbl, ignore_tbl)
-  } else if (has_rows(keys_tbl)) {
-    out <- keys_tbl
+  tbl_keys <- purrr::map2_df(data[keys_common], schema[keys_common], factor)
+  tbl_ignore <- data[keys_ignore]
+  if (has_rows(tbl_keys) & has_rows(tbl_ignore)) {
+    out <- dplyr::bind_cols(tbl_keys, tbl_ignore)
+  } else if (has_rows(tbl_keys)) {
+    out <- tbl_keys
   } else {
-    out <- ignore_tbl
+    out <- tbl_ignore
   }
   logger::log_trace("return shiny.table.store::apply_schema")
   return(out)
