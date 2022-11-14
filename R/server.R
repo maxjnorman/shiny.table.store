@@ -2,10 +2,8 @@
 table_core <- function(input,
                        output,
                        session,
-                       data = tibble::tibble(),
                        keys_ignore = c("value")) {
   history <- shiny::reactiveValues()
-  history[[get_timestamp(i = as.integer(0))]] <- data
   make_tbl <- purrr::partial(tbl_from_history, keys_ignore = keys_ignore)
   make_data <- purrr::compose(make_tbl, shiny::reactiveValuesToList)
   get_data <- shiny::reactive(make_data(history))
@@ -16,7 +14,7 @@ table_core <- function(input,
 }
 
 #' @export
-table_store <- function(input,
+table_update <- function(input,
                         output,
                         session,
                         data = tibble::tibble(),
@@ -24,9 +22,9 @@ table_store <- function(input,
   engine <- shiny::callModule(
     module = table_core,
     id = "engine",
-    data = data,
     keys_ignore = keys_ignore
   )
+  engine$history[[get_timestamp(i = as.integer(0))]] <- data
   get_keys <- purrr::partial(get_common_keys, keys_ignore = keys_ignore)
   set_update <- shiny::reactiveVal()
   shiny::observeEvent(
@@ -99,7 +97,7 @@ table_schema <- function(input,
                          schema = list(),
                          keys_ignore = c("value")) {
   engine <- callModule(
-    module = table_store,
+    module = table_update,
     id = "engine",
     data = data,
     keys_ignore = keys_ignore
