@@ -64,10 +64,10 @@ schema_core <- function(input,
     schema <- schema_from_history(history)
     return(schema)
   })
-  apply_schema <- shiny::reactive({
+  rct_apply_schema <- shiny::reactive({
     data <- get_data()
     schema <- get_schema()
-    out <- do_apply_schema(data = data, schema = schema, keys_ignore = keys_ignore)
+    out <- fun_apply_schema(data = data, schema = schema, keys_ignore = keys_ignore)
     return(out)
   })
   shiny::observeEvent(
@@ -89,7 +89,7 @@ schema_core <- function(input,
     }
   )
   return(list(
-    "get_data" = apply_schema,
+    "get_data" = rct_apply_schema,
     "get_schema" = get_schema
   ))
 }

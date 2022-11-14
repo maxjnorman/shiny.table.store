@@ -96,11 +96,11 @@ make_labels_from_cols <- function(cols, labels) {
   return(labels)
 }
 
-do_apply_schema <- function(data, schema, keys_ignore) {
-  logger::log_trace("call shiny.table.store::do_apply_schema")
+fun_apply_schema <- function(data, schema, keys_ignore) {
+  logger::log_trace("call shiny.table.store::fun_apply_schema")
   keys_tbl <- purrr::map2_df(data[names(schema)], schema, factor)
   values_tbl <- data[keys_ignore]
   out <- dplyr::bind_cols(keys_tbl, values_tbl)
-  logger::log_trace("return shiny.table.store::do_apply_schema")
+  logger::log_trace("return shiny.table.store::fun_apply_schema")
   return(out)
 }
