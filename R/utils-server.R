@@ -104,8 +104,8 @@ make_labels_from_cols <- function(cols, labels) {
 #' @param schema A named list of character vectors. Each vector is matched to a column in 'data' and transforms it into a factor.
 #' @param keys_ignore A character vector or NULL, these columns are not transformed.
 #' @returns A tibble::tibble.
-#' @noRd
-apply_schema <- function(data, schema, keys_ignore) {
+#' @export
+apply_schema <- function(data, schema, keys_ignore = NULL) {
   logger::log_trace("call shiny.table.store::apply_schema")
   keys_common <- get_common_keys(list(data, schema), keys_ignore)
   keys_missed <- setdiff(names(data), keys_common)
