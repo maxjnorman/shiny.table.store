@@ -31,16 +31,17 @@ ui <- fluidPage(
   )
 )
 server <- function(input, output, session) {
-  get_data <- reactive({
-    # invalidateLater(millis = 5)
-    input[["add_row"]]
-    tbl <- tibble::tibble(
-      x = as.character(round(runif(1, 1, 7))),
-      y = as.character(round(runif(1, 3, 10))),
-      value = rnorm(1, 0, 1)
-    )
-    return(tbl)
-  })
+  get_data <- eventReactive(
+    input[["add_row"]],
+    {
+      tbl <- tibble::tibble(
+        x = as.character(round(runif(1, 1, 7))),
+        y = as.character(round(runif(1, 3, 10))),
+        value = as.double(rnorm(1, 0, 1))
+      )
+      return(tbl)
+    }
+  )
   dat <- shiny::callModule(
     table_schema,
     id = "table_schema",
