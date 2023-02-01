@@ -23,7 +23,14 @@ cat_lists <- function(list1, list2, keys = NULL) {
   return(lists)
 }
 
+#' Function to determine if an R object has length
+#'
+#' @export
+#' @name has_length
+#' @param x an R object. For replacement, a vector or factor.
+#' @return a non-negative integer or double (which will be rounded down).
 has_length <- purrr::compose(as.logical, length)
+
 has_rows <- purrr::compose(as.logical, nrow)
 istrue_rows <- purrr::compose(isTRUE, has_rows)
 req_length <- purrr::compose(shiny::req, has_length)

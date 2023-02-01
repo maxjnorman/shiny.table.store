@@ -42,6 +42,7 @@ server <- function(input, output, session) {
     schema = list(),
     keys_ignore = c("value")
   )
+  output[["data_tbl"]] <- renderTable(dat$get_data())
   get_data <- eventReactive( # Get a row of random data
     input[["add_row"]], # Watch the 'Add row' button
     tibble::tibble( # Single-row table of random values
@@ -58,9 +59,7 @@ server <- function(input, output, session) {
     cols = c("x", "y"), # Table columns to filter
     labels = function(col) paste("FLT:", col)
   )
-  output[["data_tbl"]] <- renderTable(dat$get_data())
   output[["filter_tbl"]] <- renderTable(flt$get_data())
-  observeEvent(flt$get_data(), print(flt$get_data()))
 }
 
 shinyApp(

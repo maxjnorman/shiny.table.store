@@ -4,6 +4,17 @@ test_that("true-vector_integers", {
   expect_true(has_length(0:2))
   expect_true(has_length(0:3))
 })
+test_that("true-vector_characters", {
+  expect_true(has_length(LETTERS[1:1]))
+  expect_true(has_length(LETTERS[1:2]))
+  expect_true(has_length(LETTERS[1:3]))
+  expect_true(has_length(LETTERS[1:4]))
+})
+test_that("true-objects-dataframes", {
+  expect_true(has_length(data.frame(character = LETTERS[1:4])))
+  expect_true(has_length(data.frame(integer = 1:4)))
+  expect_true(has_length(data.frame(character = LETTERS[1:4], integer = 1:4)))
+})
 test_that("true-specials", {
   expect_true(has_length(FALSE))
   expect_true(has_length(TRUE))
