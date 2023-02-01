@@ -1,27 +1,27 @@
 test_that("utils-apply_schema-skip_keys_ignore", {
-  data <- tibble::tibble("x" = as.character(1:3))
-  schema <- list("x" = as.character(9:1))
+  # set up the inputs and output for the following tests
+  data <- tibble::tibble("x" = as.character(1:3)) # the raw values for the output tibble
+  schema <- list("x" = as.character(9:1)) # the schema will become the levels of the output
   out <- tibble::tibble("x" = factor(1:3, levels = 9:1))
-  expect_out <- purrr::partial(expect_identical, expected = out)
+  # use partial to set the variables that won't change within this test (data, schema)
   make_obj <- purrr::partial(apply_schema, data = data, schema = schema)
-  # keys_ignroe which should be wholly ignored
-  expect_out(make_obj(keys_ignore = NULL))
-  expect_out(make_obj(keys_ignore = FALSE))
-  expect_out(make_obj(keys_ignore = c("")))
-  # keys_ignore which are not in the data
-  expect_out(make_obj(keys_ignore = c("y")))
-  expect_out(make_obj(keys_ignore = c("y", "z")))
+  # keys_ignore in the below should be wholly ignored becuase they are not valid keys/tibble headers
+  expect_identical(make_obj(keys_ignore = NULL), expected = out)
+  expect_identical(make_obj(keys_ignore = FALSE), expected = out)
+  expect_identical(make_obj(keys_ignore = c("")), expected = out)
+  # keys_ignore which are not in the data - only c("x") is a valid key in data
+  expect_identical(make_obj(keys_ignore = c("y")), expected = out)
+  expect_identical(make_obj(keys_ignore = c("y", "z")), expected = out)
 })
 
 test_that("utils-apply_schema-full_keys_ignore", {
   data <- tibble::tibble("x" = as.character(1:3), "y" = as.character(4:6))
   schema <- list("x" = as.character(9:1), "y" = as.character(9:1))
-  # expect the original data set returned unchanged
-  expect_data <- purrr::partial(expect_identical, expected = data)
-  # function to make the test object
+  # use partial to set the variables that won't change within this test (data, schema)
   make_obj <- purrr::partial(apply_schema, data = data, schema = schema)
-  expect_data(make_obj(keys_ignore = c("x", "y")))
-  expect_data(make_obj(keys_ignore = c("x", "y", "z")))
+  # expect the original data set returned unchanged
+  expect_identical(make_obj(keys_ignore = c("x", "y")), expected = data) # ignore both x and y
+  expect_identical(make_obj(keys_ignore = c("x", "y", "z")), expected = data) # keys which are not in the data ("z") can be ignored anyway 
 })
 
 test_that("utils-apply_schema-valid_keys_ignore", {
