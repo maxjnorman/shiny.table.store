@@ -16,11 +16,11 @@ ui <- fluidPage(
   column(
     width = 4,
     h2("Full data set"),
-    actionButton(inputId = "add_row", label = "Add row"),
-    tableOutput(outputId = "data_tbl"),
+    tableOutput(outputId = "data_tbl")
   ),
   column(
     width = 4,
+    actionButton(inputId = "add_row", label = "Add row"),
     h2("Filter controls"),
     filter_core_ui(id = "filter_core")
   ),
@@ -31,63 +31,40 @@ ui <- fluidPage(
   )
 )
 server <- function(input, output, session) {
-  get_data <- eventReactive(
-    input[["add_row"]],
-    {
-      tbl <- tibble::tibble(
-        x = as.character(round(runif(1, 1, 7))),
-        y = as.character(round(runif(1, 3, 10))),
-        value = as.double(rnorm(1, 0, 1))
-      )
-      return(tbl)
-    }
-  )
-  dat <- shiny::callModule(
+  dat <- shiny::callModule( # Full version of the table
     table_schema,
     id = "table_schema",
-    data = tibble::tibble(x = character(), y = character(), value = double(0)),
+    data = tibble::tibble( # Start with an empty data frame
+      x = character(),
+      y = character(),
+      value = double(0)
+    ),
     schema = list(),
     keys_ignore = c("value")
   )
+  get_data <- eventReactive( # Get a row of random data
+    input[["add_row"]], # Watch the 'Add row' button
+    tibble::tibble( # Single-row table of random values
+      x = as.character(round(runif(1, 1, 7))),
+      y = as.character(round(runif(1, 3, 10))),
+      value = as.double(rnorm(1, 0, 1))
+    )
+  )
+  observeEvent(get_data(), dat$set_update(get_data()))
   flt <- shiny::callModule(
     filter_core,
     id = "filter_core",
-    get_data = dat$get_data,
-    cols = c("x", "y"),
+    get_data = dat$get_data, # Take in the full data
+    cols = c("x", "y"), # Table columns to filter
     labels = function(col) paste("FLT:", col)
   )
-  observeEvent(
-    get_data(),
-    {
-      if (nrow(dat$get_data()) < 15) {
-        dat$set_update(get_data())
-      }
-    }
-  )
-  observeEvent(flt$get_data(), {
-    print(flt$get_data())
-  })
-  output[["data_tbl"]] <- renderTable(
-    dplyr::arrange(
-      dat$get_data(),
-      dplyr::across(
-        dplyr::any_of(c("x", "y")),
-        purrr::compose(as.double, as.character)
-      )
-    )
-  )
-  output[["filter_tbl"]] <- renderTable({
-    dplyr::arrange(
-      flt$get_data(),
-      dplyr::across(
-        dplyr::any_of(c("x", "y")),
-        purrr::compose(as.double, as.character)
-      )
-    )
-  })
+  output[["data_tbl"]] <- renderTable(dat$get_data())
+  output[["filter_tbl"]] <- renderTable(flt$get_data())
+  observeEvent(flt$get_data(), print(flt$get_data()))
 }
 
 shinyApp(
   ui = ui,
-  server = server
+  server = server,
+  options = list("display.mode" = "showcase")
 )
