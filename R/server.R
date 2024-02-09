@@ -59,6 +59,7 @@ schema_core <- function(input,
   get_schema <- shiny::reactive({
     history <- shiny::reactiveValuesToList(history)
     schema <- schema_from_history(history)
+    browser()
     return(schema)
   })
   mod_apply_schema <- purrr::partial(apply_schema, keys_ignore = keys_ignore)
