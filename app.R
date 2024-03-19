@@ -49,7 +49,9 @@ server <- function(input, output, session) {
       x = as.character(round(runif(1, 1, 7))),
       y = as.character(round(runif(1, 3, 10))),
       value = as.double(rnorm(1, 0, 1))
-    )
+    ),
+    ignoreInit = FALSE,
+    ignoreNULL = FALSE
   )
   observeEvent(get_data(), dat$set_update(get_data()))
   flt <- shiny::callModule(
